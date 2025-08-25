@@ -1,0 +1,20 @@
++++
+date = '2025-08-24T23:36:31-04:00'
+draft = false
+title = 'Start Simple'
++++
+
+I think starting simple is the best approach for any new project. By focusing on the basics, we can build a strong foundation and gradually add complexity as needed. The story of this blog is a testament to that!
+
+I have been thinking about building a blog for a while. I made a couple of attempts before but I had to let it go in the middle of the process, or just after one or two posts. Why? Because I overcomplicated things. I tried to consider too many things at once, like the design, the content strategy, and the technical implementation. So, I took a step back, and tried to simplify my approach. I started with a question: "What do I actually want? and how can I achieve it in the simplest way possible?"
+
+**What do I actually want?**
+I want to share my thoughts and ideas with others, and I want to do it in a way that is enjoyable for both me and my readers. I want to create a space where I can explore topics that interest me, and where others can join in the conversation. Although I may decide to expand my blog later or incorporate more advanced features, my primary goal is to have a simple channel that allows me to communicate. So, I decided to keep things straightforward and focus on the core aspects of blogging.
+
+**How can I achieve it in the simplest way possible?**
+One of my initial attempts involved setting up a repo, and creating some `.md` files and notebooks. But I realized that, from reader's perspective, this approach was too complex. It required them to navigate multiple files and formats, which could be overwhelming. So, I decided to take a look at a `Quarto`, which is an open-source tool for creating dynamic documents, reports, and presentations. The documentation has a section that guides users through the process of creating a simple blog with Quarto. I then noticed that learning a new tool has its own challenges.Therefore, I decided to not go further with it. Instead, I took a step back one more time to understand where I am now, and where I want to be! I am familiar with the basics of `markdown`. So, what is the simplest way to take me from there to a fully functional blog? All I really wanted was a tool that converts `markdown` files into a static website. So, my question is now clearer: "what static site generator (SSG) should I use?" I did a bit of research and tried to narrow down my options. Eventually, I ended up with two options: `Hugo` and `Jekyll`. Which one should I choose? I decided to think about the components that are of my interest, and think about the pros/cons of each option in those components. To build a blog, I needed a `SSG` to convert `.md` files to `html`. I also wanted to be able to use `Github-Action` for deployment. I wanted to host my blog somewhere simple, like GitHub Pages. After searching about their pros and cons, I decided to go with `Hugo + Netlify` option for the following reasons:
+* quick learning curve for `Hugo` as beginner
+* `Netlify` offers easy deployment. It has a faster "build" process. In contrast to Github Pages, it can easily integrate with `Hugo`.
+* One can use `Github-Actions` to automatically deploy to `Netlify`.
+
+To complete my story, I need to mention one last thing. In addition to all these considerations, I also wanted to have a blog that allows me to publish nested posts. So, I can have one main post for a particular topic, and once users click on it, they can see related sub-posts or discussions. I realized that having such structure requires a bit more planning and organization in terms of content hierarchy and navigation. And I had to make sure `Hugo` can support it without any major workarounds. I realized that I was stepping away from the simplicity I initially aimed for. So, I decided to go with a flat structure for my posts, at least for now. This means I will focus on creating standalone posts without worrying too much about nesting or complex hierarchies. As I gain more experience and confidence, I can always revisit this aspect and make adjustments as needed. 
