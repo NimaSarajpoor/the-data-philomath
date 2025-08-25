@@ -1,4 +1,4 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://the-data-philomath.netlify.app/'
 languageCode = 'en-us'
 title = 'The data philomath'
 theme = 'ananke'
