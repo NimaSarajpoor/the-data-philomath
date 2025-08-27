@@ -1,6 +1,6 @@
 +++
 date = '2025-08-26T22:17:39-04:00'
-draft = true
+draft = false
 title = 'Legacy code'
 +++
 
