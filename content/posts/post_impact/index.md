@@ -8,7 +8,7 @@ Let's say you are running an application to process some data for your client. T
 
 How do you deal with that? Of course, to resolve different issues you need to have different set of skills and knowledge. Here I am only trying to provide a general framework.  Let's say the pipelines are connected as follows:
 
-![data pipelines](pipelines_mermaid.png)
+![pipelines](pipelines_mermaid.png)
 
 
 Let's consider three scenarios: <br>
