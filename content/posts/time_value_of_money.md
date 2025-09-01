@@ -1,5 +1,5 @@
 +++ 
-draft = true
+draft = false
 date = 2025-09-01T00:25:41-04:00
 title = "The Time Value of Money"
 description = ""
@@ -59,8 +59,8 @@ Where:
 
 Plugging in the values:
 
-$ FV = 100 \times (1 + 0.05)^2 $
-$ FV = 100 \times (1.1025) $
+$ FV = 100 \times (1 + 0.05)^2 $ <br>
+$ FV = 100 \times (1.1025) $ <br>
 $ FV = 110.25 $
 
 To break it down:
@@ -77,7 +77,7 @@ Note that, in the second year, you earn interest not only on your initial invest
 
 Now, if you invest `PV` amount in the beginning of a year, and want to know the FV at the end of the second year, you can take a look at the timeline, and compute the FV as follows:
 
-* $FV_{1} = PV \times (1 + r)$
+* $FV_{1} = PV \times (1 + r)$ <br>
 * $FV_{2} = FV_{1} \times (1 + r) = PV \times (1 + r)^2$
 
 
@@ -125,8 +125,10 @@ There are different kinds of cash flows:
 
 Let's start with `Perpetuities`. Let's say there is a regular cash flow of $C$ that continues forever. And let's say the payment starts at the end of each year. Let's add them together at `t=0`:
 
-$PV = C(1+r)^{-1} + C(1+r)^{-2} + C(1+r)^{-3} + ...$ <br>
-$PV = \frac{C(1+r)^{-1}}{1 - (1+r)^{-1}}$ <br>
+$PV = C(1+r)^{-1} + C(1+r)^{-2} + C(1+r)^{-3} + ... $
+
+$PV = \frac{C(1+r)^{-1}}{1 - (1+r)^{-1}}$
+
 $PV = \frac{C}{r}$
 
 
