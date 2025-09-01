@@ -17,7 +17,7 @@ style = "rose-pine-dawn"
 
 [params]
   author = "Nima Sarajpoor"
-  info = "The data philomath"
+  info = "An experienced data scientist and machine learning engineer"
   description = "My Personal Website"
   keywords = "blog, data, personal"
   avatarurl = "images/avatar.jpeg"
@@ -68,3 +68,9 @@ url = "about/"
 name = "Blog"
 weight = 2
 url = "posts/"
+
+
+[[menu.main]]
+name = "Contact me"
+weight = 3
+url = "contact/"
