@@ -1,6 +1,6 @@
 +++
 date = '2025-08-31T20:08:14-04:00'
-draft = true
+draft = false
 title = "Let's join tables.... wait!"
 +++
 
@@ -42,3 +42,5 @@ def analyze_mapping(df):
 
     return mapping
 ```
+
+Next time that you need to join two DataFrames, make sure to analyze the mapping between the key columns first. This will help you understand the potential impact of the join operation on your data and avoid unexpected results. If it has one to many mapping, you may end up with duplicate rows in the resulting DataFrame, which could affect your analysis. In such case, you may need to aggregate the data or think about how to handle the duplicates. Always check the mapping before performing joins!
