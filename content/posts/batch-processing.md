@@ -1,5 +1,5 @@
 +++ 
-draft = true
+draft = false
 date = 2025-09-02T20:34:34-04:00
 title = "Batch processing"
 description = ""
