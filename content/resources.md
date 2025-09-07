@@ -55,3 +55,15 @@ This is a collection of resources that I find useful in my journey as a data sci
 24. [Martin Fowler](https://martinfowler.com)
 
 25. [Luciano Ramalho - Fluent Python](https://elmoukrie.com/wp-content/uploads/2022/05/luciano-ramalho-fluent-python_-clear-concise-and-effective-programming-oreilly-media-2022.pdf)
+
+26. [Netflix Tech Blog](https://netflixtechblog.com)
+
+27. [LinkedIn Engineering Blog](https://www.linkedin.com/blog/engineering)
+
+28. [Uber Engineering Blog](https://www.uber.com/en-CA/blog/engineering/)
+
+29. [Airbnb Engineering Blog](https://airbnb.tech/blog/)
+
+30. [Pinterest Engineering Blog](https://medium.com/pinterest-engineering)
+
+31. [Dropbox Tech Blog](https://dropbox.tech)
