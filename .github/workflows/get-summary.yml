@@ -13,16 +13,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10' 
+
+    - name: Install dependencies
+      run: pip install -q -U google-genai
+
     - name: Get changed files
       id: files
       uses: tj-actions/changed-files@v44
       with:
         files: 'content/posts/*.md'
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10' 
 
     - name: Process the changed file
       if: ${{ steps.files.outputs.all_changed_files_count == 1 }}
