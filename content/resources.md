@@ -67,3 +67,5 @@ This is a collection of resources that I find useful in my journey as a data sci
 30. [Pinterest Engineering Blog](https://medium.com/pinterest-engineering)
 
 31. [Dropbox Tech Blog](https://dropbox.tech)
+
+32. [YouTube Video Ollama](https://www.youtube.com/watch?v=UtSSMs6ObqY)
