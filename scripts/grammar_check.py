@@ -4,7 +4,7 @@ import glob
 tool = language_tool_python.LanguageTool('en-US')
 
 output = []
-for md_file in glob.glob("posts/*.md"):
+for md_file in glob.glob("content/posts/*.md"):
     with open(md_file, "r") as f:
         text = f.read()
 
