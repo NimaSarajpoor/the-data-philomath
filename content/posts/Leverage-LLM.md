@@ -11,7 +11,7 @@ externalLink = ""
 series = []
 +++
 
-In [one of my initial blog posts](./start-simple.md), I discussed the importance of starting simple when building a new thing. This allows you to not get lost in the weeds of complexity, and, instead, think about the components that can help you achieve your goals. For each component, you can apply the same principle of starting simple. 
+In one of my initial blog posts, I discussed the importance of starting simple when building a new thing. This allows you to not get lost in the weeds of complexity, and, instead, think about the components that can help you achieve your goals. For each component, you can apply the same principle of starting simple. 
 
 One of the components that I wanted to add to the workflow of my blog was the ability to automatically get a (draft) summary of a new post so that I can share it easily on social media. So, I decided to leverage a language model to help me with this task. At first, I searched for existing models. Are the small ones good enough? Can any fine-tuned small model be easily used in Github Actions without too much hassle?... but then I remembered that I should start simple! So, I just picked a LLM with free-tier API access. I then added the API key to the Github Secrets of my blog repo, and created a Github Action that would summarize a new post that is added in a PR. The action will print the summary for me. I can then do a quick review of the summary, and copy it to my social media posts! Awesome! I have now a new component in my blog workflow that helps me save time and effort! 
 
