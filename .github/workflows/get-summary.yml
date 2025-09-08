@@ -1,0 +1,43 @@
+name: Process Single Changed File
+
+on:
+  pull_request:
+    branches:
+    - main  # Or the name of your main branch
+
+jobs:
+  find_and_process_file:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10' 
+
+    - name: Install dependencies
+      run: pip install -q -U google-genai
+
+    - name: Get changed files
+      id: files
+      uses: tj-actions/changed-files@v44
+      with:
+        files: 'content/posts/*.md'
+
+    - name: Process the changed file
+      if: ${{ steps.files.outputs.all_changed_files_count == 1 }}
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: |
+        FILE_PATH=$(echo "${{ steps.files.outputs.all_changed_files }}" | tr -d '[:space:]')
+        python scripts/summary.py "$FILE_PATH"
+
+    - name: Fail if more than one file is changed
+      if: ${{ steps.files.outputs.all_changed_files_count > 1 }}
+      run: |
+        echo "Error: This workflow only supports single-file changes. Please commit only one file per pull request."
+        exit 1
+
