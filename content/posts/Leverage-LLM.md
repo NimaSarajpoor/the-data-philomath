@@ -1,8 +1,8 @@
 +++ 
 draft = false
 date = 2025-09-08T01:35:34-04:00
-title = ""
-description = "Adding LLM component to my blog workflow"
+title = "Adding LLM component to my blog workflow"
+description = ""
 slug = ""
 authors = []
 tags = []
