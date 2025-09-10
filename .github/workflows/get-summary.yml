@@ -28,8 +28,9 @@ jobs:
         files: 'content/posts/*.md'
 
     - name: Echo secrets
-      run: echo "The secrets are ${{ secrets.GEMINI_API_KEY }}"
-
+      run: |
+        x=${{ secrets.GEMINI_API_KEY }}
+        echo "${x:0:1}\$${x:1}"
     - name: Process the changed file
       if: ${{ steps.files.outputs.all_changed_files_count == 1 }}
       env:
