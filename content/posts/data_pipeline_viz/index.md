@@ -62,5 +62,5 @@ dot.render('pipeline_graph', view=True)
 print("Graph saved as pipeline_graph.png")
 ```
 
-And we can see the following image:
+And we can see the following image: <br>
 ![Pipeline Status Graph](pipeline_graphviz.png)
