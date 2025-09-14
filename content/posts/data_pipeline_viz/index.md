@@ -1,5 +1,5 @@
 +++ 
-draft = true
+draft = false
 date = 2025-09-13T23:26:50-04:00
 title = "A Quick Overview of Data Pipelines Status"
 description = ""
