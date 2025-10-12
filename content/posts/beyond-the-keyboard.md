@@ -14,7 +14,7 @@ series = []
 
 Many of us are looking for ways to enhance our skills in different areas such as programming, design, etc. However, I think you will gain a lot more by learning meta-skills, which are skills that can be applied across various domains. Here are some meta-skills that I believe are valuable:
 
-1. **Learning How to Learn**: Understanding how to effectively acquire new knowledge and skills is crucial. This includes techniques like spaced repetition, active recall, and the Feynman technique.
+1. **Learning How to Learn**: Understanding how to effectively acquire new knowledge and skills is crucial. This includes techniques like spaced repetition, active recall, and the Feynman technique. Also, there is [this excellent post by Eric Ma](https://ericmjl.github.io/blog/2025/10/1/how-data-scientists-can-master-life-sciences-and-software-skills-for-biotech-using-ultralearning/)
 
 2. **Critical Thinking**: The ability to analyze information objectively and make reasoned judgments is essential in any field. This involves questioning assumptions, evaluating evidence, and considering alternative perspectives.
 
