@@ -1,5 +1,5 @@
 +++ 
-draft = false
+draft = true
 date = 2025-11-23T14:41:10-05:00
 title = "Notes to Self: First Attempt to Prep Roadmap for the Next Three Months"
 description = ""
