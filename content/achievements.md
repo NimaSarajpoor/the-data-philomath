@@ -2,7 +2,7 @@ Here is a selected list of my achievements:
 
 * Became father, 2024 
 * Invited as speaker to Toronto Data Workshop on leveraging STUMPY for pattern recognition, 2023
-* Finished my PhD in 2023, specializing in pattern recognition, 2022
+* Finished my PhD, specializing in pattern recognition, 2022
 * Ranked 5th in Programming Contest (CCPC), 2022
 * Top contributor in two data-analysis tools, [STUMPY](https://github.com/TDAmeritrade/stumpy/graphs/contributors) and [MLXTEND](https://github.com/rasbt/mlxtend/graphs/contributors), 2022
 * Gordon Lewis Hedberg Doctoral Scholarship (awarded to students with excellent grades), 2021
