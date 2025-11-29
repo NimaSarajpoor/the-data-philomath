@@ -223,7 +223,7 @@ rfft_callers = {
 
 ![Performnance Gain](Figure_Performance_V2.png)
 
-As shown in the performance plot above, using `pyfftw.FFTW` directly resulted in a significant performance improvement compared to the previous version. We achieved up to 2.5x speed-up for short-size arrays (arrays with lengths `<2^7`), and around 1.5x speed-up for larger arrays, where the length of arrays is `>2^15`. For array sizes in between, we observed that the speed-up is less than 25% for most cases. 
+As shown in the performance plot above, using `pyfftw.FFTW` directly resulted in a significant performance improvement compared to the previous version. We achieved about 2.5x speed-up for short-size arrays (arrays with lengths `<2^7`), and around 1.5x speed-up for larger arrays, where the length of arrays is `>2^15`. For array sizes in between, we observed that the speed-up is less than 25% for most cases. 
 
 ### Attemp 3: Reuse the RFFT object (V3)
 Another optimization we can try is to reuse the RFFT object across multiple executions. Creating the RFFT object might have some overhead. Therefore, reusing it might improve the performance. 
