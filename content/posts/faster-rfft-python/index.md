@@ -149,7 +149,7 @@ def rfft_caller_v0(T):
 ```
 
 ### First Attempt: Byte-align the input array in advance (V1)
-`pyfftw` internally byte-aligns the input array by default to provide better performance. One potential optimization is to create a byte-aligned array in advance, and reuse this array. This allows `pyfftw` to avoid unnecessary copies of the input data that might happen within the RFFT computation.  We can allow allow pyfftw to overwrite our array as it should not affect our original data.
+`pyfftw` internally byte-aligns the input array by default to provide better performance. One potential optimization is to create a byte-aligned array in advance, and reuse this array. This allows `pyfftw` to avoid unnecessary copies of the input data that might happen within the RFFT computation.  We can also allow `pyfftw` to overwrite our array as it should not affect our original data.
 
 ```python
 class rfft_caller_v1:
