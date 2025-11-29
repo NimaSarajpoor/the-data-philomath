@@ -12,10 +12,10 @@ series = []
 +++
 
 
-Real Fast Fourier Transform (RFFT) converts a real-valued signal from the time domain to the frequency domain. Different libraries in python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. pyFFTW is a Python wrapper for [FFTW](https://www.fftw.org), which is known for its speed in computing Fourier transforms. I couldn't find much documentation on how to get the best performance out of pyFFTW's RFFT implementation. So, I decided to explore this topic and share my findings here. Let's dive in!
+The **Real Fast Fourier Transform (RFFT)** converts a real-valued signal from the time domain to the frequency domain. Different libraries in Python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. pyFFTW is a Python wrapper for [FFTW](https://www.fftw.org), which is known for its speed in computing Fourier transforms. I couldn't find much documentation on how to get the best performance out of pyFFTW's RFFT implementation. So, I decided to explore this topic and share my findings here. Let's dive in!
 
 ## Installation
-[FFTW](https://www.fftw.org) is one of the requirements of pyFFTW and it does not come with pyFFTW. You can install it through `conda`. I assume you have `conda` installed, and you know how to create and activate a conda environment. See [pyFFTw's github page](https://github.com/pyFFTW/pyFFTW) to learn more about pyFFTW installation, inclduing the minimum python version requirement.
+[FFTW](https://www.fftw.org) is one of the requirements of pyFFTW and it does not come with pyFFTW. You can install it through `conda`. I assume you have `conda` installed, and you know how to create and activate a conda environment. See [pyFFTw's github page](https://github.com/pyFFTW/pyFFTW) to learn more about pyFFTW installation, including the minimum Python version requirement.
 
 Once you are in your environment, install `FFTW` by running the following command:
 ```bash
@@ -41,7 +41,7 @@ R = rfft_obj(T)
 ```
 
 ## Performance Optimization
-The RFFT on arrays with different sizes can have different performance. The performance of RFFT can be significantly improved when input arrays have specific sizes (e.g., powers of two). Here we consider input sizes that are powers of two, and try to find ways to improve the performnace of RFFT further in those cases. 
+The RFFT on arrays with different sizes can have different performance. The performance of RFFT can be significantly improved when input arrays have specific sizes (e.g., powers of two). Here we consider input sizes that are powers of two, and try to find ways to improve the performance of RFFT further in those cases. 
 
 
 ### Timing
@@ -83,7 +83,7 @@ def get_timing(n_values, rfft_caller, timeout=5.0, iter_max=1000000, verbose=Tru
 
 There are a few things to note in the above code:
 1. To be on the safe side, we use `pyfftw.forget_wisdom()` to clear all previously-stored plans (wisdoms). This is to make sure that we start fresh, and our timing result does not benefit, in any way, from any previously-computed wisdom. If you are not familiar with the concept of wisdom in FFTW, you can read more about it [on pyFFTW's documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/pyfftw.html#wisdom-functions).
-2.  Once wisdom is obtained, it does not need to be re-computed in the same session again. Therefore, there is a dummy run to compute the wisdom plan in advance. Therefore, the wisdom overhead is not counted in the timing.
+2.  Once wisdom is obtained, it does not need to be re-computed in the same session again. There is a dummy run to compute the wisdom plan in advance. Therefore, the wisdom overhead is not counted in the timing.
 3. We verify the correctness of the RFFT result by comparing it with NumPy's RFFT output.
 
 
@@ -180,7 +180,7 @@ rfft_callers = {
 
 Let's check out the performance improvement:
 
-![Performnance Gain](Figure_Performance_V1.png)
+![Performance Gain](Figure_Performance_V1.png)
 
 As shown in the performance plot above, our first attempt to optimize the RFFT computation resulted in 5-10% speed-up for most cases. Not bad for a first try! Let's see if we can do better!!
 
@@ -221,11 +221,11 @@ rfft_callers = {
 }
 ```
 
-![Performnance Gain](Figure_Performance_V2.png)
+![Performance Gain](Figure_Performance_V2.png)
 
 As shown in the performance plot above, using `pyfftw.FFTW` directly resulted in a significant performance improvement compared to the previous version. We achieved about 2.5x speed-up for short-size arrays (arrays with lengths `<2^7`), and around 1.5x speed-up for larger arrays, where the length of arrays is `>2^15`. For array sizes in between, we observed that the speed-up is less than 25% for most cases. 
 
-### Third Attemp: Reuse the RFFT object (V3)
+### Third Attempt: Reuse the RFFT object (V3)
 In previous version, we intentionally created the RFFT object inside the `__call__` method. This means that for every call, a new RFFT object is created. The goal here is to see how much performance gain we can get by reusing the RFFT object across multiple calls when the input size does not change.
 
 ```python
@@ -266,7 +266,7 @@ rfft_callers = {
 }
 ```
 
-![Performnance Gain](Figure_Performance_V3.png)
+![Performance Gain](Figure_Performance_V3.png)
 
 As shown in the performance plot above, reusing the RFFT object resulted in a huge performance improvement compared to the previous versions. We achieved about 30x speed-up for arrays with lengths `<2^8`. And from that point on, the speed-up gradually decreases to around 2x-3x for larger arrays`. This shows the overhead of creating RFFT object is considerable even when plan (wisdom) is already available. 
 
