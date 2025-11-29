@@ -172,7 +172,7 @@ In this modified version, an instance of the class `rfft_caller_v1` can be used 
 
 ![Performnance Gain](Figure_Performance_V1.png)
 
-As shown in the performance plot above, our first attempt to optimize the RFFT computation resulted in 5-10% speed-up for most cases except one. Not bad for a first try! Let's see if we can do better!!
+As shown in the performance plot above, our first attempt to optimize the RFFT computation resulted in 5-10% speed-up for most cases. Not bad for a first try! Let's see if we can do better!!
 
 ### Second Attempt: Use pyfftw.FFTW object directly (V2)
 Another idea to explore is to use the `pyfftw.FFTW` object directly instead of using the builder function. The builder function `pyfftw.builders.rfft` is a convenient way to create FFTW objects. This may introduce some overhead. So, on top of the previous optimization, we can try to use `pyfftw.FFTW` directly.
