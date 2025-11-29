@@ -131,6 +131,8 @@ plt.legend()
 plt.show()
 ```
 
+The above code sets up a framework to compare different RFFT implementations. It defines a dictionary `rfft_callers` to hold different versions of RFFT caller functions. It then computes the timing for each version and plots the speed-up factor compared to the baseline version (V0), which is provided below. 
+
 We are now ready to explore different implementations of RFFT using pyFFTW and see how we can improve the performance! Let's start with a baseline implementation of RFFT using pyFFTW.
 
 ### Baseline (V0)
@@ -183,7 +185,7 @@ Let's check out the performance improvement:
 As shown in the performance plot above, our first attempt to optimize the RFFT computation resulted in 5-10% speed-up for most cases. Not bad for a first try! Let's see if we can do better!!
 
 ### Second Attempt: Use pyfftw.FFTW object directly (V2)
-Another idea to explore is to use the `pyfftw.FFTW` object directly instead of using the builder function. The builder function `pyfftw.builders.rfft` is a convenient way to create FFTW objects. This may introduce some overhead. So, on top of the previous optimization, we can try to use `pyfftw.FFTW` directly.
+Another idea to explore is to use the `pyfftw.FFTW` object directly instead of using the builder function. The builder function `pyfftw.builders.rfft` is a convenient way to create FFTW objects. This may introduce some overhead. So, on top of the previous optimization, we are going to use `pyfftw.FFTW` directly.
 
 ```python
 class rfft_caller_v2:
@@ -209,7 +211,7 @@ class rfft_caller_v2:
         return self.complex_arr
 ```
 
-Note that, in addition to the input array, we also create an output array `complex_arr` to hold the RFFT result. Let's update the dictionary `rfft_callers` to include this new version:
+Note that, in addition to the input array, we also created an output array `complex_arr` to hold the RFFT result. Let's update the dictionary `rfft_callers` to include this new version:
 
 ```python
 rfft_callers = {
