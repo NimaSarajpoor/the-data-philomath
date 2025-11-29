@@ -82,7 +82,7 @@ def get_timing(n_values, rfft_caller, timeout=5.0, iter_max=1000000, verbose=Tru
 ```
 
 There are a few things to note in the above code:
-1. We use `pyfftw.forget_wisdom()` to clear all previously-stored plans (wisdoms). This is to make sure that we start fresh
+1. We use `pyfftw.forget_wisdom()` to clear all previously-stored plans (wisdoms). This is to make sure that we start fresh. If you are not familiar with the concept of wisdom in FFTW, you can read more about it [on pyFFTW's documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/pyfftw.html#wisdom-functions).
 2.  Once wisdom is obtained, no need to be re-computed in the same session again. Therefore, there is a dummy run to compute the wisdom plan in advance. Therefore, the wisdom overhead is not counted in the timing.
 3. We verify the correctness of the RFFT result by comparing it with NumPy's RFFT output.
 
@@ -91,7 +91,7 @@ Now that we have the timing function ready, we can start exploring different imp
 
 ```python
 rfft_callers = {
-    'V0': rfft_caller_v0,
+    'V0': rfft_caller_v0,  # baseline (see below)
     # Add other versions here later
 }
 
