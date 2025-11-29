@@ -167,7 +167,16 @@ class rfft_caller_v1:
         return rfft_obj.output_array
 ```
 
-In this modified version, an instance of the class `rfft_caller_v1` can be used to compute the RFFT. It holds the byte-aligned array `real_arr`, as an attribute, after the first call. When the `__call__` method is invoked again, it checks if the size of the input array `T` matches the size of the existing aligned array, and if yes, it reuses the existing byte-aligned array. Now, let's check out the performance improvement:
+In this modified version, an instance of the class `rfft_caller_v1` can be used to compute the RFFT. It holds the byte-aligned array `real_arr`, as an attribute, after the first call. When the `__call__` method is invoked again, it checks if the size of the input array `T` matches the size of the existing aligned array, and if yes, it reuses the existing byte-aligned array. Let's update the dictionary rfft_callers to include this new version:
+
+```python
+rfft_callers = {
+    'V0': rfft_caller_v0,
+    'V1': rfft_caller_v1(),
+}
+```
+
+Let's check out the performance improvement:
 
 ![Performnance Gain](Figure_Performance_V1.png)
 
