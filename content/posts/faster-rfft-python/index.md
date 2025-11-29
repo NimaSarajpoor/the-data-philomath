@@ -12,11 +12,11 @@ series = []
 +++
 
 
-Real Fast Fourier Transform (RFFT) is an algorithm that converts a real-valued signal from its time domain into its frequency components. Different libraries in python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. The focus of this post is to demonstrate how to use pyFFTW properly. pyFFTW is a Python wrapper for the [FFTW](https://www.fftw.org), which is known for its speed and efficiency in computing Fourier transforms. 
+Real Fast Fourier Transform (RFFT) converts a real-valued signal from the time domain to the frequency domain. Different libraries in python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. The focus of this post is to demonstrate how to use pyFFTW properly. pyFFTW is a Python wrapper for [FFTW](https://www.fftw.org), which is known for its speed in computing Fourier transforms.
 
 
 ## Installation
-[FFTW](https://www.fftw.org) is one of the requirements of pyFFTW that needs to be installed first, and it does not come bundled with pyFFTW. The easiest way to install it is through `conda`. I assume you have `conda` installed, and you know how to create and activate a conda environment. The minimum python version for pyFFTW is `3.11` (as of November 2025).
+[FFTW](https://www.fftw.org) is one of the requirements of pyFFTW and it does not come bundled with pyFFTW. You can install it through `conda`. I assume you have `conda` installed, and you know how to create and activate a conda environment. See [pyFFTw's github page](https://github.com/pyFFTW/pyFFTW) to learn more about pyFFTW installation, inclduing the minimum python version requirement.
 
 Once you are in your environment, install `FFTW` by running the following command:
 ```bash
@@ -30,11 +30,7 @@ conda install conda-forge::pyfftw
 ``` 
 
 
-Now, we are ready to use pyFFTW in our code!
-
-
-## Example Code
-The following code demonstrates how to use pyFFTW to perform RFFT on a real-valued signal. 
+Now, we are ready to use pyFFTW! The following code demonstrates how to use pyFFTW to perform RFFT on a real-valued array. 
 
 ```python
 import numpy as np
@@ -43,24 +39,17 @@ import pyfftw
 T = np.random.rand(4)
 rfft_obj = pyfftw.builders.rfft(np.empty(len(T), dtype='float64'))
 R = rfft_obj(T)
-
-# verify the result
-R_ref = np.fft.rfft(T)
-np.testing.assert_allclose(R, R_ref)
 ```
 
-In this code, we created a RFFT object using `pyfftw.builders.rfft`. We then use this object to compute the RFFT of the real-valued array `T`. Finally, we verify the result by comparing it with the output of NumPy's RFFT. 
-
-
 ## Performance Optimization
-The RFFT on arrays with different sizes can have different performance. The performance of RFFT can be significantly improved when input arrays have specific sizes (e.g., powers of two). Here we consider input sizes that are powers of two, and try to find ways to improve the performnace of RFFT in those cases. 
+The RFFT on arrays with different sizes can have different performance. The performance of RFFT can be significantly improved when input arrays have specific sizes (e.g., powers of two). Here we consider input sizes that are powers of two, and try to find ways to improve the performnace of RFFT further in those cases. 
 
 
 ### Timing
-Let's start by preparing a script that can get the timing of RFFT computation using pyFFTW.
+Let's start by preparing a script that can get the timing of RFFT computation.
 
 ```python
-def _get_timing_single(n, rfft_caller, timeout=5.0):
+def _get_timing_single(n, rfft_caller, timeout=5.0, iter_max=100000):
     """
     For a single input size n, return the time taken to compute RFFT using rfft_caller
     """
@@ -68,12 +57,11 @@ def _get_timing_single(n, rfft_caller, timeout=5.0):
     T = np.random.rand(n)
 
     R = rfft_caller(T) # dummy to create wisdom
-    R_ref = np.fft.rfft(T)
-    np.testing.assert_allclose(R, R_ref)
+    np.testing.assert_allclose(R, np.fft.rfft(T))  # verify correctness
 
     total_time = 0.0
     count = 0
-    while total_time < timeout:
+    while total_time < timeout and count < iter_max:
         start_time = time.perf_counter()
         rfft_caller(T)
         total_time += time.perf_counter() - start_time
@@ -82,7 +70,7 @@ def _get_timing_single(n, rfft_caller, timeout=5.0):
     return total_time / count
 
 
-def get_timing(n_values, rfft_caller, timeout=5.0, verbose=True):
+def get_timing(n_values, rfft_caller, timeout=5.0, iter_max=1000000, verbose=True):
     """
     n_values: an array of input sizes
     """
@@ -90,30 +78,17 @@ def get_timing(n_values, rfft_caller, timeout=5.0, verbose=True):
     for i, n in enumerate(n_values):
         if verbose:
             print(f"log2(n) --> {int(np.log2(n))}", flush=True)
-        timing[i] = _get_timing_single(n, rfft_caller, timeout=timeout)
+        timing[i] = _get_timing_single(n, rfft_caller, timeout=timeout, iter_max=iter_max)
     return timing
 ```
 
-
-Let's start with a baseline implementation of RFFT using pyFFTW.
-
-### Baseline (V0)
-```python
-import numpy as np
-import pyfftw
-import time
+There are a few things to note in the above code:
+1. We use `pyfftw.forget_wisdom()` to clear all previously-stored plans (wisdoms). This is to make sure that we start fresh
+2.  Once wisdom is obtained, no need to be re-computed in the same session again. Therefore, there is a dummy run to compute the wisdom plan in advance. Therefore, the wisdom overhead is not counted in the timing.
+3. We verify the correctness of the RFFT result by comparing it with NumPy's RFFT output.
 
 
-def rfft_caller_v0(T):
-    """
-    Create and return a RFFT caller function for input size n
-    """
-    rfft_obj = pyfftw.builders.rfft(np.empty(len(T)))
-    
-    return rfft_obj(T)
-```
-
-And before moving further, let's prepare a script that is flexible enough to run different versions of the timing function, and plot the performance results:
+Now that we have the timing function ready, we can start exploring different implementations of RFFT using pyFFTW to see how we can improve the performance. But, first, let's prepare a script that can help us get the timing results for different implementations and plot the performance improvement.
 
 ```python
 rfft_callers = {
@@ -157,15 +132,25 @@ plt.legend()
 plt.show()
 ```
 
-There a few things to note in the above code:
-1. We use `pyfftw.forget_wisdom()` to clear any previous plans. This is to make sure tha we start fresh
-2. We run a pyfftw's object to initialize the wisdom. So, the wisdom overhead is not counted in the timing.
-3. We verify the correctness of the RFFT result by comparing it with NumPy's RFFT output.
+We are now ready to explore different implementations of RFFT using pyFFTW and see how we can improve the performance! Let's start with a baseline implementation of RFFT using pyFFTW.
 
-Let's see how we can improve the performance!
+### Baseline (V0)
+```python
+import numpy as np
+import pyfftw
+
+
+def rfft_caller_v0(T):
+    """
+    Create and return a RFFT caller function for input size n
+    """
+    rfft_obj = pyfftw.builders.rfft(np.empty(len(T)))
+    
+    return rfft_obj(T)
+```
 
 ### First Attempt: Byte-align the input array in advance (V1)
-To improve the performance, `pyfftw` internally byte-aligns the input array. One idea is to create a byte-aligned array in advance, and reuse this array. This allows to avoid unnecessary copies of the input data that might happen within the RFFT computation. 
+`pyfftw` internally byte-aligns the input array by default to provide better performance. One potential optimization is to create a byte-aligned array in advance, and reuse this array. This allows `pyfftw` to avoid unnecessary copies of the input data that might happen within the RFFT computation.  We can allow allow pyfftw to overwrite our array as it should not affect our original data.
 
 ```python
 class rfft_caller_v1:
@@ -183,15 +168,7 @@ class rfft_caller_v1:
         return rfft_obj.output_array
 ```
 
-In this modified version, an instance of the class `rfft_caller_v1` can be used to compute the RFFT. It holds the byte-aligned array `real_arr`, as an attribute, after the first call. When the `__call__` method is invoked again, it checks if the size of the input array `T` matches the size of the existing aligned array, and if yes, it reuses the existing byte-aligned array. Let's update the dictionary `rfft_callers` to include this new version:
-
-```python
-rfft_callers = {
-    'V0': rfft_caller_v0,
-    'V1': rfft_caller_v1(),
-}
-```
-Now, let's run the timing script to see the performance improvement:
+In this modified version, an instance of the class `rfft_caller_v1` can be used to compute the RFFT. It holds the byte-aligned array `real_arr`, as an attribute, after the first call. When the `__call__` method is invoked again, it checks if the size of the input array `T` matches the size of the existing aligned array, and if yes, it reuses the existing byte-aligned array. Now, let's check out the performance improvement:
 
 ![Performnance Gain](Figure_Performance_V1.png)
 
