@@ -268,7 +268,7 @@ rfft_callers = {
 
 ![Performnance Gain](Figure_Performance_V3.png)
 
-As shown in the performance plot above, reusing the RFFT object resulted in a huge performance improvement compared to the previous versions. We achieved up to 30x speed-up for arrays with lengths `<2^8`. And from that point on, the speed-up gradually decreases to around 2x-3x for larger arrays`. This shows the overhead of creating RFFT object is considerable even when plan (wisdom) is already available. 
+As shown in the performance plot above, reusing the RFFT object resulted in a huge performance improvement compared to the previous versions. We achieved about 30x speed-up for arrays with lengths `<2^8`. And from that point on, the speed-up gradually decreases to around 2x-3x for larger arrays`. This shows the overhead of creating RFFT object is considerable even when plan (wisdom) is already available. 
 
 If the goal is to compute RFFT on multiple arrays with same size, reusing the RFFT object is straightforward. You only create it once (in which the plan is computed as well), and then you can use it multiple times without any overhead of creating the RFFT object again. However, if the input sizes vary a lot, and you need to compute RFFT on arrays with a certain, different sizes sequentially, and do that again and again, then caching the RFFT objects for different sizes can be a good idea to improve performance. However, this requires more work to implement the caching mechanism, and it requires more memory to store the cached RFFT objects. This is outside the scope of this post.
 
