@@ -12,8 +12,7 @@ series = []
 +++
 
 
-Real Fast Fourier Transform (RFFT) converts a real-valued signal from the time domain to the frequency domain. Different libraries in python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. The focus of this post is to demonstrate how to use pyFFTW properly. pyFFTW is a Python wrapper for [FFTW](https://www.fftw.org), which is known for its speed in computing Fourier transforms.
-
+Real Fast Fourier Transform (RFFT) converts a real-valued signal from the time domain to the frequency domain. Different libraries in python, such as NumPy, SciPy, and [pyFFTW](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), provide an API for RFFT. However, their performance can vary. pyFFTW is a Python wrapper for [FFTW](https://www.fftw.org), which is known for its speed in computing Fourier transforms. I couldn't find much documentation on how to get the best performance out of pyFFTW's RFFT implementation. So, I decided to explore this topic and share my findings here. Let's dive in!
 
 ## Installation
 [FFTW](https://www.fftw.org) is one of the requirements of pyFFTW and it does not come bundled with pyFFTW. You can install it through `conda`. I assume you have `conda` installed, and you know how to create and activate a conda environment. See [pyFFTw's github page](https://github.com/pyFFTW/pyFFTW) to learn more about pyFFTW installation, inclduing the minimum python version requirement.
