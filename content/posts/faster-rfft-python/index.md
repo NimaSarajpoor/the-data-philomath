@@ -332,3 +332,122 @@ As shown in the performance plot above, reusing the RFFT object resulted in a fu
 
 ## Conclusion
 In this post, we explored different ways to optimize the performance of RFFT computation using pyFFTW in Python. We started with a baseline implementation and gradually improved it by applying various optimizations, such as byte-aligning the input array, using the `pyfftw.FFTW` object directly, and reusing the RFFT object across multiple executions. We did not explore multithreading here, but it may offer further performance gains, especially for large arrays.
+
+
+## BONUS: Anything else?
+During my exploration, I also tried the following things based on what I read in the [FFTW documentation](https://www.fftw.org/fftw3_doc/Planner-Flags.html). 
+
+* v5: passing the `FFTW_DESTROY_INPUT`flag: According to the documentation, this flag indicates that the input array can be destroyed during the computation. This allows FFTW to use the memory of the input array if needed, which might lead to performance improvements.
+
+* v6: passing the `FFTW_PATIENT` flag: This flag tells FFTW to spend more time planning the FFT in order to find a potentially faster algorithm. 
+
+* v7: use multithreading: By setting the `threads` parameter to a value greater than 1, we can enable multithreading in FFTW, which may lead to performance improvements on multi-core systems.
+
+
+To keep this section short, I will plot the performance improvement for all three attempts in the same plot, using the version `V4` (our so-far-fastest implementation) as the new baseline.
+
+```python
+# v5: passing the FFTW_DESTROY_INPUT flag
+class rfft_caller_v5:
+    def __init__(self):
+        self.real_arr = None
+        self.complex_arr = None
+        self.rfft_obj = None
+    
+    
+    def __call__(self, T):
+        if self.real_arr is None or len(T) != len(self.real_arr):
+            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
+            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
+
+            self.rfft_obj = pyfftw.FFTW(
+                    self.real_arr,
+                    self.complex_arr,
+                    direction='FFTW_FORWARD',
+                    flags=('FFTW_MEASURE', 'FFTW_DESTROY_INPUT'),
+                    threads=1,
+                ) 
+           
+        self.real_arr[:] = T
+        self.rfft_obj.execute()
+
+        return self.complex_arr
+
+_rfft_caller_v5 = rfft_caller_v5()
+```
+
+```python
+# v6: passing the FFTW_PATIENT flag
+class rfft_caller_v6:
+    def __init__(self):
+        self.real_arr = None
+        self.complex_arr = None
+        self.rfft_obj = None
+    
+    
+    def __call__(self, T):
+        if self.real_arr is None or len(T) != len(self.real_arr):
+            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
+            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
+
+            self.rfft_obj = pyfftw.FFTW(
+                    self.real_arr,
+                    self.complex_arr,
+                    direction='FFTW_FORWARD',
+                    flags=('FFTW_PATIENT',),
+                    threads=1,
+                ) 
+           
+        self.real_arr[:] = T
+        self.rfft_obj.execute()
+
+        return self.complex_arr
+_rfft_caller_v6 = rfft_caller_v6()
+```
+
+```python
+# v7: use multithreading
+import multiprocessing
+
+class rfft_caller_v7:
+    def __init__(self):
+        self.real_arr = None
+        self.complex_arr = None
+        self.rfft_obj = None
+    
+    
+    def __call__(self, T):
+        if self.real_arr is None or len(T) != len(self.real_arr):
+            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
+            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
+
+            self.rfft_obj = pyfftw.FFTW(
+                    self.real_arr,
+                    self.complex_arr,
+                    direction='FFTW_FORWARD',
+                    flags=('FFTW_MEASURE',),
+                    threads=multiprocessing.cpu_count(),  
+                    # use all available cores, 8 in my case
+                ) 
+           
+        self.real_arr[:] = T
+        self.rfft_obj.execute()
+
+        return self.complex_arr
+_rfft_caller_v7 = rfft_caller_v7()
+```
+
+And the performance plot is:
+
+![Performance Gain](Figure_bonus.png)
+
+Here are the observations from the performance plot above:
+* v5 (FFTW_DESTROY_INPUT): This version does not result in any significant performance improvement compared to `v4`. In fact, for some input sizes, it is slightly slower in most cases.
+* v6 (FFTW_PATIENT): This version shows a modest performance improvement over `v4` for input sizes `>= 2^20`. One thing to note that is the planning time is significantly higher when using this flag. So it may not be suitable if user does not use pre-computed plans (wisdom), and instead wants to create plans on-the-fly. 
+
+* v7 (multithreading): This version shows a significant performance improvement for large input sizes (>= 2^16). For smaller input sizes, the overhead of managing multiple threads outweighs the benefits, leading to slower performance compared to `v4`. Therefore, one needs to be careful when using multithreading, and it is recommended to use it only for large input sizes.
+
+
+
+
+
