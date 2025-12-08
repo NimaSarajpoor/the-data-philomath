@@ -1,5 +1,5 @@
 +++ 
-draft = true
+draft = false
 date = 2025-12-07T20:11:47-05:00
 title = "Explore pyFFTW Wisdom: Understanding FFTW Plans in Python"
 description = ""
@@ -12,7 +12,7 @@ series = []
 +++
 
 
-In this post, I share some insights I learned while working with the [pyFFTW](https://github.com/pyFFTW/pyFFTW) library in Python, specifically about the concept of [wisdom](https://pyfftw.readthedocs.io/en/latest/source/tutorial.html#wisdom). pyFFTW is a Python wrapper around [FFTW](http://www.fftw.org/), a highly-optimized library for computing the fourier transform. One of FFTW’s features is its ability to store and reuse optimized FFT plans, collectively referred to as wisdom. This post focuses on explaining what wisdom is and how it works.
+In this short post, I share some insights I learned while working with the [pyFFTW](https://github.com/pyFFTW/pyFFTW) library in Python, specifically about the concept of [wisdom](https://pyfftw.readthedocs.io/en/latest/source/tutorial.html#wisdom). pyFFTW is a Python wrapper around [FFTW](http://www.fftw.org/), a highly-optimized library for computing the fourier transform. One of FFTW’s features is its ability to store and reuse optimized FFT plans, collectively referred to as wisdom. This post focuses on explaining what wisdom is and how it works.
 
 
 ## What is `wisdom`?
