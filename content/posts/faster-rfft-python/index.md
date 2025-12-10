@@ -377,7 +377,7 @@ The plot below shows the impact of those two flags on performance, relative to t
 As shown, using `FFTW_ESTIMATE` flag results in a significant drop in the performance relattive to `FFTW_MEASURE`, particularly for input sizes that are `>=2^15`. The performance difference between `FFTW_PATIENT` and `FFTW_MEASURE` is negligible for input sizes `<= 2^21`. There is, however,  performance boost for large input, where size is `>=2^22`. Since the planning flag affects the planning time as well, it is worth it to show how much the planning takes in those three flags. The following table shows the planning time, in seconds, for input sizes `>= 2^22`.
 
 
-| INPUT SIZE                           | 2^22 | 2^23 | 2^24 |
+|                                      | 2^22 | 2^23 | 2^24 |
 | ------------------------------------ | ---- | ---- | ---- |
 | FFTW_ESTIMATE                        | 0.07 | 0.14 | 0.31 |
 | FTFTW_MEASURE (Default, baseline V4) | 37   | 83   | 175  |
