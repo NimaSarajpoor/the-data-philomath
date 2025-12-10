@@ -331,123 +331,56 @@ As shown in the performance plot above, reusing the RFFT object resulted in a fu
 
 
 ## Conclusion
-In this post, we explored different ways to optimize the performance of RFFT computation using pyFFTW in Python. We started with a baseline implementation and gradually improved it by applying various optimizations, such as byte-aligning the input array, using the `pyfftw.FFTW` object directly, and reusing the RFFT object across multiple executions. We did not explore multithreading here, but it may offer further performance gains, especially for large arrays.
+In this post, we explored different ways to optimize the performance of RFFT computation using pyFFTW in Python. We started with a baseline implementation and gradually improved it by applying various optimizations, such as byte-aligning the input array, using the `pyfftw.FFTW` object directly, and reusing the RFFT object across multiple executions. 
 
 
-## BONUS: Anything else?
-During my exploration, I also tried the following things based on what I read in the [FFTW documentation](https://www.fftw.org/fftw3_doc/Planner-Flags.html). 
-
-* v5: passing the `FFTW_DESTROY_INPUT`flag: According to the documentation, this flag indicates that the input array can be destroyed during the computation. This allows FFTW to use the memory of the input array if needed, which might lead to performance improvements.
-
-* v6: passing the `FFTW_PATIENT` flag: This flag tells FFTW to spend more time planning the FFT in order to find a potentially faster algorithm. 
-
-* v7: use multithreading: By setting the `threads` parameter to a value greater than 1, we can enable multithreading in FFTW, which may lead to performance improvements on multi-core systems.
+## BONUS
+During my exploration, I also tried the following cases based on what I read in the [FFTW documentation](https://www.fftw.org/fftw3_doc/Planner-Flags.html). Our so-far-best performance is `v4`. This will be considered as our new baseline. 
 
 
-To keep this section short, I will plot the performance improvement for all three attempts in the same plot, using the version `V4` (our so-far-fastest implementation) as the new baseline.
+**(1) The impact of the flag FFTW_DESTROY_INPUT**
 
-```python
-# v5: passing the FFTW_DESTROY_INPUT flag
-class rfft_caller_v5:
-    def __init__(self):
-        self.real_arr = None
-        self.complex_arr = None
-        self.rfft_obj = None
-    
-    
-    def __call__(self, T):
-        if self.real_arr is None or len(T) != len(self.real_arr):
-            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
-            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
+Passing the `FFTW_DESTROY_INPUT`flag allows FFTW to use the memory allocated for the input array during transformation, if possible. The plot below shows its impact on the performance. 
 
-            self.rfft_obj = pyfftw.FFTW(
-                    self.real_arr,
-                    self.complex_arr,
-                    direction='FFTW_FORWARD',
-                    flags=('FFTW_MEASURE', 'FFTW_DESTROY_INPUT'),
-                    threads=1,
-                ) 
-           
-        self.real_arr[:] = T
-        self.rfft_obj.execute()
+![Performance Gain](Figure_DESTROY_INPUT.png)
 
-        return self.complex_arr
+As shown, there is no considerable, positive impact. In fact, according to the [pyfftw.FFTW documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/pyfftw.html#pyfftw.FFTW):
 
-_rfft_caller_v5 = rfft_caller_v5()
-```
+> The default behaviour is, if possible, to preserve the input. In the case of the 1D Backwards Real transform, this may result in a performance hit
 
-```python
-# v6: passing the FFTW_PATIENT flag
-class rfft_caller_v6:
-    def __init__(self):
-        self.real_arr = None
-        self.complex_arr = None
-        self.rfft_obj = None
-    
-    
-    def __call__(self, T):
-        if self.real_arr is None or len(T) != len(self.real_arr):
-            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
-            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
-
-            self.rfft_obj = pyfftw.FFTW(
-                    self.real_arr,
-                    self.complex_arr,
-                    direction='FFTW_FORWARD',
-                    flags=('FFTW_PATIENT',),
-                    threads=1,
-                ) 
-           
-        self.real_arr[:] = T
-        self.rfft_obj.execute()
-
-        return self.complex_arr
-_rfft_caller_v6 = rfft_caller_v6()
-```
-
-```python
-# v7: use multithreading
-import multiprocessing
-
-class rfft_caller_v7:
-    def __init__(self):
-        self.real_arr = None
-        self.complex_arr = None
-        self.rfft_obj = None
-    
-    
-    def __call__(self, T):
-        if self.real_arr is None or len(T) != len(self.real_arr):
-            self.real_arr = pyfftw.empty_aligned(len(T), dtype='float64')    
-            self.complex_arr = pyfftw.empty_aligned(len(T) // 2 + 1, dtype='complex128')
-
-            self.rfft_obj = pyfftw.FFTW(
-                    self.real_arr,
-                    self.complex_arr,
-                    direction='FFTW_FORWARD',
-                    flags=('FFTW_MEASURE',),
-                    threads=multiprocessing.cpu_count(),  
-                    # use all available cores, 8 in my case
-                ) 
-           
-        self.real_arr[:] = T
-        self.rfft_obj.execute()
-
-        return self.complex_arr
-_rfft_caller_v7 = rfft_caller_v7()
-```
-
-And the performance plot is:
-
-![Performance Gain](Figure_bonus.png)
-
-Here are the observations from the performance plot above:
-* v5 (FFTW_DESTROY_INPUT): This version does not result in any significant performance improvement compared to `v4`. In fact, for some input sizes, it is slightly slower in most cases.
-* v6 (FFTW_PATIENT): This version shows a modest performance improvement over `v4` for input sizes `>= 2^20`. One thing to note that is the planning time is significantly higher when using this flag. So it may not be suitable if user does not use pre-computed plans (wisdom), and instead wants to create plans on-the-fly. 
-
-* v7 (multithreading): This version shows a significant performance improvement for large input sizes (>= 2^16). For smaller input sizes, the overhead of managing multiple threads outweighs the benefits, leading to slower performance compared to `v4`. Therefore, one needs to be careful when using multithreading, and it is recommended to use it only for large input sizes.
+So, this flag most likely can help with improving performance in backward transformation. So, observing no improvement in forward transformation, should not be surprising.
 
 
+**(2) The impact of multi-threading**
+
+`pyfftw.FFTW` allows users to leverage multi-threading. The parameter `thread` is set to 1 by default, meaning the `pyfftw.FFTW` takes the single-threaded approach by default. Note that our baseline (`V4`), is single-threaded. The plot below shows the performance improvement when the number of threads is set to two , and when it is set to eight, the value of `multiprocessing.cpu_count()` in my machine.
+
+![Performance Gain](Figure_Threads_2_8.png)
 
 
+The speed-up occurs when the array's length is `>= 2^15`, where higher number of threads results in better performance, up to 2x faster. It is interesting to see that a multi-threading process does not necessarily improve the performance. In fact, for mid-range input size, there is a considerable drop in the performance. This drop is likely due to the overhead of distributing load across thrads, and managing the process. So users should not assume that multi-threading will always improve the performance, and they need to check and see when multi-threading helps with improving the performance of pyFFTW on their machine.
 
+
+**(3) The impact of planning effort**
+
+According to pyfftw documentation:
+
+> 'FFTW_ESTIMATE', 'FFTW_MEASURE', 'FFTW_PATIENT' and 'FFTW_EXHAUSTIVE' are supported. These describe the increasing amount of effort spent during the planning stage to create the fastest possible transform. Usually 'FFTW_MEASURE' is a good compromise. If no flag is passed, the default 'FFTW_MEASURE' is used.
+
+
+So far, we have been using the default flag, i.e. `FFTW_MEASURE`. Now we would like to check the impact of using less-time-consuming flag `FFTW_ESTIMATE` and more-time-consuming flag `FFTW_PATIENT`. The `FFTW_EXHAUSTIVE` flag is not considered here since its planning time can be significanly high for large arrays. 
+
+The plot below shows the impact of those two flags on performance, relative to the baseline (`V4`), which uses the default flag `FFTW_MEASURE`.
+
+![Performance Gain](Figure_PLAN.png)
+
+As shown, using `FFTW_ESTIMATE` flag results in a significant drop in the performance relattive to `FFTW_MEASURE`, particularly for input sizes that are `>=2^15`. The performance difference between `FFTW_PATIENT` and `FFTW_MEASURE` is negligible for input sizes `<= 2^21`. There is, however,  performance boost for large input, where size is `>=2^22`. Since the planning flag affects the planning time as well, it is worth it to show how much the planning takes in those three flags. The following table shows the planning time, in seconds, for input sizes `>= 2^22`.
+
+
+| INPUT SIZE                           | 2^22 | 2^23 | 2^24 |
+| ------------------------------------ | ---- | ---- | ---- |
+| FFTW_ESTIMATE                        | 0.07 | 0.14 | 0.31 |
+| FTFTW_MEASURE (Default, baseline V4) | 37   | 83   | 175  |
+| FFTW_PATIENT                         | 655  | 1581 | 3224 |
+
+As we can see, the planning time with `FFTW_PATIENT` is 20x slower compared to `FTFTW_MEASURE`. This is not an issue if users want to perform planning with this flag for a few large arrays. Because they can save the wisdom and re-use it later. However, performing the planning for many large arrays with `FFTW_PATIENT` can take a considerable time. Note that the performance gain for 2^24 is 50%, which is not bad. However, it all depends on the application.
