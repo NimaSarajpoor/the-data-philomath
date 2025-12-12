@@ -51,7 +51,7 @@ RFFT performance varies across input sizes. The performance of RFFT can be signi
 Let's start by preparing a script that can get the timing of RFFT computation. This timing function will be used  to evaluate the performance of different RFFT implementations.
 
 ```python
-def _get_timing_single(n, rfft_caller, timeout=5.0, iter_max=1000000):
+def _get_timing_single(n, rfft_caller, timeout=5.0, max_iter=1000000):
     """
     For a single input size n, return the time taken to compute RFFT using rfft_caller
     """
@@ -62,35 +62,35 @@ def _get_timing_single(n, rfft_caller, timeout=5.0, iter_max=1000000):
     np.testing.assert_allclose(R, np.fft.rfft(T))  # verify correctness
 
     total_time = 0.0
-    count = 0
-    while total_time < timeout and count < iter_max:
+    n_iter = 0
+    while total_time < timeout and n_iter < max_iter:        
         start_time = time.perf_counter()
         rfft_caller(T)
         total_time += time.perf_counter() - start_time
-        count += 1
+        n_iter += 1
 
-    return total_time / count
+    return total_time / n_iter
 
 
-def get_timing(n_values, rfft_caller, timeout=5.0, iter_max=1000000, verbose=True):
+def get_timing(n_values, rfft_caller, timeout=5.0, max_iter=1000000, verbose=True):
     """
     For multiple input sizes in n_values, return the time taken to compute RFFT using rfft_caller
     """
     timing = np.full(len(n_values), -1.0, dtype='float64')
     for i, n in enumerate(n_values):
-        timing[i] = _get_timing_single(n, rfft_caller, timeout=timeout, iter_max=iter_max)
+        timing[i] = _get_timing_single(n, rfft_caller, timeout=timeout, max_iter=max_iter)
         if verbose:
             print(f"log2(n) --> {int(np.log2(n))}, time: {timing[i]:.6f} sec", flush=True)
     return timing
 ```
 
-`_get_timing_single` measures the average time to perform an RFFT on an array of size `n` using the supplied `rfft_caller`. The function `get_timing` simply extends this logic to multiple input sizes listed in n_values.
+`_get_timing_single` measures the average time to perform an RFFT on an array of size `n` using the supplied `rfft_caller`. The function `get_timing` simply extends this logic to multiple input sizes listed in `n_values`.
 
 In `_get_timing_single`, we first clear any previously stored FFTW plans (known as “wisdom”) using `pyfftw.forget_wisdom()`. If you’re not familiar with FFTW wisdom, here’s a quick summary: For a new transformation for a new input size, FFTW may spend time exploring different algorithms to find the fastest strategy in the first call. The result of this search, "plan", is essentially a performance recipe that allows future FFTs of the same input size and type to skip the search entirely. This wisdom is cached by `pyfftw` internally. Running `pyfftw.forget_wisdom()` ensures that we start fresh without any cached plans. For a deeper explanation, see [this short blog post](https://the-data-philomath.netlify.app/posts/pyfftw-wisdom/).
 
-Next, we generate a random input array `T` of length `n`. We then perform a dummy RFFT call using `rfft_caller(T)`, mainly to allow FFTW to build the optimal plan (i.e., compute wisdom) ahead of timing. We also validate correctness by comparing the output to NumPy’s `np.fft.rfft` via `np.testing.assert_allclose`. This step is important because it ensures that we are timing a correct implementation.
+Next, we generate a random input array `T` of length `n`. We then perform a dummy RFFT call using `rfft_caller(T)`, mainly to allow FFTW to build the optimal plan (i.e., compute wisdom) ahead of timing. The assumption here is that we know, in advance, the input sizes and therefore we can pre-compute plans and use them alter, and, hence, there is no need to include the planning time in our study. (If an application needs to apply fft on new, different (unforeseen) input sizes, the planning time can become an important factor.) We also validate correctness by comparing the output to NumPy’s `np.fft.rfft` via `np.testing.assert_allclose`. This step is important because it ensures that we are timing a correct implementation.
 
-We then enter a loop that repeatedly computes the RFFT until either the accumulated time exceeds timeout or the iteration count reaches iter_max. Using a time-based stopping criterion is preferable to a fixed iteration count: for small input sizes, RFFT calls are very fast, allowing many iterations and giving more stable timing; for large inputs, calls are slower, so fewer iterations may fit within the timeout. This keeps timing consistent and meaningful across a range of array sizes. Finally, the function returns the average time per RFFT call.
+We then enter a loop that repeatedly computes the RFFT until either the accumulated time exceeds `timeout` or the iteration count reaches `max_iter`. Using a time-based stopping criterion is preferable to a fixed iteration count: for small input sizes, RFFT calls are very fast, allowing many iterations and giving more stable timing; for large inputs, calls are slower, so fewer iterations may fit within the timeout. This keeps timing consistent and meaningful across a range of array sizes. Finally, the function returns the average time per RFFT call.
 
 Now that we have the timing functions ready, we can start exploring different implementations of RFFT using pyFFTW to see how we can improve the performance. But, first, let's prepare a script that can help us get the timing results for different implementations and plot the performance improvement.
 
@@ -189,7 +189,7 @@ Let's check out the performance improvement. The blue line higher than the red b
 
 ![Performance Gain](Figure_v1.png)
 
-As shown in the performance plot above, our first attempt to optimize the RFFT computation resulted in about 2-12% speed-up for most input sizes. It is not clear to me why the performance drops for inputs with sizes `2^13` to `2^15`. I am going to skip the investigation for those cases. Let's see if we can do better!!
+For the input sizes `<= 2^10`, the figure shows approximately 10% performance gain. For longer input sizes, the performances are relatively the same; because, most likely, the Fourier transformation takes a bigger share of the running time in those cases. As a side, this can be investigated by profiling each line of the code. Will leave it to the keen reader to explore this further!
 
 
 ### Second Attempt: Tell RFFT to avoid copy (v2)
@@ -199,7 +199,7 @@ According to [pyfftw.builders.rfft documentation](https://pyfftw.readthedocs.io/
 
 > This only influences a copy during the creation of the object
 
-In our case, the byte-aligned array `real_arr` is used when creating the RFFT object. And, then, it is filled with the contents of `T` right before executing the RFFT object. Therefore, at the time of creating the RFFT object, the contents of `real_arr` are not important as they will be overwritten. We do this by setting the `avoid_copy` parameter to `True` to avoid unnecessary copying of data at the time of creating the RFFT object.
+In our case, the byte-aligned array `real_arr` is used when creating the RFFT object. And, then, it is filled with the contents of `T` right before executing the RFFT object. Therefore, at the time of creating the RFFT object, the contents of `real_arr` are not important as they will be overwritten. Therefore, we can set the `avoid_copy` parameter to `True` to avoid unnecessary copying of data at the time of creating the RFFT object.
 
 ```python
 class rfft_caller_v2:
@@ -237,7 +237,7 @@ As shown in the performance plot above, our second attempt to optimize the RFFT 
 
 
 ### Third Attempt: Use pyfftw.FFTW directly (v3)
-In the previous versions, we used `pyfftw.builders.rfft` to create the RFFT object. As mentioned in [pyfftw.builders documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), the goal of builder functions is to provide a convenient interface for creating FFTW objects. Under the hood, any builder function returns an object that is an instance of `_FFTWWrappe`, which is a child class of `pyfftw.FFTW`. One potential optimization is to use `pyfftw.FFTW` directly. This might save some overhead associated with the builder functions.
+In the previous versions, we used `pyfftw.builders.rfft` to create the RFFT object. As mentioned in [pyfftw.builders documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html), the goal of builder functions is to provide a convenient interface for creating FFTW objects. As mentioned in the [documentation](https://pyfftw.readthedocs.io/en/latest/source/pyfftw/builders/builders.html#module-pyfftw.builders), any builder function, under the hood, returns an object that is an instance of `pyfftw.FFTW`. One potential optimization is to use `pyfftw.FFTW` directly. This might save some overhead associated with the builder functions.
 
 
 ```python
@@ -265,7 +265,7 @@ class rfft_caller_v3:
 _rfft_caller_v3 = rfft_caller_v3()
 ```
 
-As shown above, we now need to provide the output array `complex_arr` to hold the RFFT result. And, we also pass `direction='FFTW_FORWARD'` to indicate that we want to perform the forward transformation. The `pyfftw.FFTW` class then infers that we want to compute RFFT based on the data types of the input and output arrays. We lose some convenience compared to the builder interface, but we may gain performance. Let's update the dictionary `rfft_callers` to include this new version, and check out the performance improvements.
+As shown above, we now need to provide the output array `complex_arr` to hold the RFFT result. And, we also pass `direction='FFTW_FORWARD'` to indicate that we want to perform the forward transformation. The `pyfftw.FFTW` class then infers that we want to compute RFFT based on the data types of the input and output arrays. We lose some convenience compared to the builder interface, but we may get better performance. Let's update the dictionary `rfft_callers` to include this new version, and check out the performance improvements.
 
 
 ```python
@@ -353,12 +353,12 @@ So, this flag most likely can help with improving performance in backward transf
 
 **(2) The impact of multi-threading**
 
-`pyfftw.FFTW` allows users to leverage multi-threading. The parameter `thread` is set to 1 by default, meaning the `pyfftw.FFTW` takes the single-threaded approach by default. Note that our baseline (`V4`), is single-threaded. The plot below shows the performance improvement when the number of threads is set to two , and when it is set to eight, the value of `multiprocessing.cpu_count()` in my machine.
+`pyfftw.FFTW` allows users to leverage multi-threading. The parameter `threads` is set to 1 by default, meaning the `pyfftw.FFTW` takes the single-threaded approach by default. Note that our baseline (`V4`), is single-threaded. The plot below shows the performance improvement when the number of threads is set to two , and when it is set to eight, the value of `multiprocessing.cpu_count()` in my machine.
 
 ![Performance Gain](Figure_Threads_2_8.png)
 
 
-The speed-up occurs when the array's length is `>= 2^15`, where higher number of threads results in better performance, up to 2x faster. It is interesting to see that a multi-threading process does not necessarily improve the performance. In fact, for mid-range input size, there is a considerable drop in the performance. This drop is likely due to the overhead of distributing load across thrads, and managing the process. So users should not assume that multi-threading will always improve the performance, and they need to check and see when multi-threading helps with improving the performance of pyFFTW on their machine.
+The speed-up occurs when the array's length is `>= 2^15`, where higher number of threads results in better performance, up to 2x faster. It is interesting to see that a multi-threading process does not necessarily improve the performance. In fact, for mid-range input size, there is a considerable drop in the performance. This drop is likely due to the overhead of distributing load across threads, and managing the process. So users should not assume that multi-threading will always improve the performance, and they need to check and see when multi-threading helps with improving the performance of pyFFTW on their machine.
 
 
 **(3) The impact of planning effort**
@@ -374,7 +374,7 @@ The plot below shows the impact of those two flags on performance, relative to t
 
 ![Performance Gain](Figure_PLAN.png)
 
-As shown, using `FFTW_ESTIMATE` flag results in a significant drop in the performance relattive to `FFTW_MEASURE`, particularly for input sizes that are `>=2^15`. The performance difference between `FFTW_PATIENT` and `FFTW_MEASURE` is negligible for input sizes `<= 2^21`. There is, however,  performance boost for large input, where size is `>=2^22`. Since the planning flag affects the planning time as well, it is worth it to show how much the planning takes in those three flags. The following table shows the planning time, in seconds, for input sizes `>= 2^22`.
+As shown, using `FFTW_ESTIMATE` flag results in a significant drop in the performance relative to `FFTW_MEASURE`, particularly for input sizes that are `>=2^15`. The performance difference between `FFTW_PATIENT` and `FFTW_MEASURE` is negligible for input sizes `<= 2^21`. There is, however,  performance boost for large input, where size is `>=2^22`. Since the planning flag affects the planning time as well, it is worth it to show how much time the planning takes in those three flags. The following table shows the planning time, in seconds, for input sizes `>= 2^22`.
 
 
 |                                      | 2^22 | 2^23 | 2^24 |
@@ -383,4 +383,4 @@ As shown, using `FFTW_ESTIMATE` flag results in a significant drop in the perfor
 | FTFTW_MEASURE (Default, baseline V4) | 37   | 83   | 175  |
 | FFTW_PATIENT                         | 655  | 1581 | 3224 |
 
-As we can see, the planning time with `FFTW_PATIENT` is 20x slower compared to `FTFTW_MEASURE`. This is not an issue if users want to perform planning with this flag for a few large arrays. Because they can save the wisdom and re-use it later. However, performing the planning for many large arrays with `FFTW_PATIENT` can take a considerable time. Note that the performance gain for 2^24 is 50%, which is not bad. However, it all depends on the application.
+As we can see, the planning time with `FFTW_PATIENT` is 20x slower compared to `FTFTW_MEASURE`. This is not an issue if users want to perform planning with this flag for a few large arrays. Because they can save the wisdom and re-use it later. However, performing the planning for many large arrays with `FFTW_PATIENT` can take a considerable time.
