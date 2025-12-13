@@ -2,3 +2,7 @@
 .DS_Store
 content/.DS_Store
 resources/
+
+**/*.npy
+**/*.py
+**/*.pkl
