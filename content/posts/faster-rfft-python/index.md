@@ -1,6 +1,6 @@
 +++ 
-draft = true
-date = 2025-11-25T01:24:53-05:00
+draft = false
+date = 2025-12-12T20:00:00-05:00
 title = "Getting Faster RFFT in Python"
 description = ""
 slug = ""
