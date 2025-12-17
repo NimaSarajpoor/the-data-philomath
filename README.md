@@ -1,1 +1,1 @@
-Deployed on netlify via: https://app.netlify.com/projects/the-data-philomath/deploys
+Deployed on netlify. Link: https://app.netlify.com/projects/the-data-philomath/deploys
