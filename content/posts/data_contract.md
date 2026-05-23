@@ -16,7 +16,7 @@ If you are processing a certain data asset, and you want to make sure that the d
 * the type of the information (e.g., string, integer, etc.)
 
 
-```{python}
+```python
 # Example of a data contract
 # tuple format: (path_to_object, key_in_object, name_of_information, type_of_information)
 DATA_CONTRACT = [
