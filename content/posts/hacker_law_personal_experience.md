@@ -1,7 +1,7 @@
 +++
 date = '2026-06-02T11:18:00-04:00'
 draft = false
-title = 'Hacker_law_personal_experience'
+title = 'Shape Your Engineering Perspective!'
 +++
 
 The GitHub repository [hacker-laws](https://github.com/dwmkerr/hacker-laws) provides a collection of "laws" that describe various phenomena in the world of technology, programming, and software development. After reading through the repository, I found that many of the laws resonated with my personal experiences in both personal and non-personal projects. I've shared below some of the laws that I found particularly relevant.
