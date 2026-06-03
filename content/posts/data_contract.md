@@ -1,10 +1,9 @@
 +++
 date = '2026-05-22T23:08:12-04:00'
 draft = false
-title = 'Data_contract'
+title = 'Data contract'
 +++
 
-# Data Contract
 
 I didn't read much about data contracts, but, at the very least, I understand that they are a way to define the structure of data that is being exchanged between different systems or components. They can be used to ensure that the data being sent and received is in the correct format and contains the necessary information. 
 
