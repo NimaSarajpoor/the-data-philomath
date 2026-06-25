@@ -4,7 +4,7 @@ draft = false
 title = 'Leadership and Management'
 +++
 
-In this post, I would like to share the conversation I had with my one of my colleagues regarding "management" and "leadership". This post is for those who are interested in having a better understanding of "Management" and "Leadership", and are looking for resources to learn more. I am using this place to save a few resources for myself so that I can check them out later!
+This post is for those who are interested in having a better understanding of "Management" and "Leadership", and are looking for resources to learn more. I am using this place to save a few resources for myself so that I can check them out later!
 
 * **Management:** Helps with running a process smoothly and efficiently.
 * **Leadership:** Helps with influencing team, and providing direction for what should come next
